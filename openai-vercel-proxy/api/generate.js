@@ -1,10 +1,10 @@
 export default async function handler(req, res) {
-  // ✅ Allow requests from any origin (for development)
+  // ✅ Set proper CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  // ✅ Handle preflight OPTIONS request
+  // ✅ Respond to preflight OPTIONS request
   if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
@@ -37,6 +37,7 @@ export default async function handler(req, res) {
     const data = await openaiRes.json();
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong." });
+    console.error("Server error:", error);
+    res.status(500).json({ error: "Failed to generate response" });
   }
 }
