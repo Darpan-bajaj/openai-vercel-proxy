@@ -6,16 +6,16 @@ export default async function handler(req, res) {
 
   // ✅ Handle preflight requests
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+    return res.status(200).end(); // Respond immediately for OPTIONS
   }
 
-  // ✅ Now your main logic
+  // ✅ Parse incoming request
   const { prompt, selection } = req.body;
 
   const messages = [
     {
       role: "system",
-      content: "You are an assistant that helps designers improve text on UI elements inside Figma."
+      content: "You are an assistant that helps designers improve text on UI elements inside Figma.",
     },
     {
       role: "user",
@@ -23,6 +23,7 @@ export default async function handler(req, res) {
     }
   ];
 
+  // ✅ Make request to OpenAI
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
