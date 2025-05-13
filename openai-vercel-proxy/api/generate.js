@@ -1,32 +1,32 @@
-const { OpenAI } = require("openai");
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST requests allowed" });
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
   }
 
-  const { prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).json({ error: "Missing prompt" });
-  }
+  const { prompt, model = "gpt-3.5-turbo", messages = [] } = req.body;
 
   try {
-    const chatResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "You are a helpful assistant." },
-        { role: "user", content: prompt }
-      ]
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model,
+        messages
+      })
     });
 
-    const result = chatResponse.choices[0].message.content;
-    res.status(200).json({ result });
+    const data = await response.json();
+    return res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: error.message || "Unknown error" });
+    console.error("❌ Proxy Error:", error);
+    return res.status(500).json({ error: "Something went wrong" });
   }
-};
+}
